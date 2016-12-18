@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # create a config file for use with itabashi
+# TODO is this future import really needed?
 from __future__ import print_function
-import getpass
+
 import json
-import sys
 
 from slugify import slugify
 
@@ -26,8 +26,8 @@ gui = GuiManager()
 
 # irc config
 print("~=~ IRC Configuration ~=~")
-config['modules']['irc']['nickname'] = input('Nickname: ')
-config['modules']['irc']['server'] = input('Server: ')
+config['modules']['irc']['nickname'] = gui.get_string('Nickname: ')
+config['modules']['irc']['server'] = gui.get_string('Server: ')
 config['modules']['irc']['tls'] = is_ok('Use TLS/SSL? [y] ', True)
 
 if config['modules']['irc']['tls']:
@@ -37,25 +37,25 @@ else:
     default_port = 6667
 
 if is_ok('Identify with NickServ password? [n] ', False):
-    config['modules']['irc']['nickserv_password'] = input('NickServ Password: ')
+    config['modules']['irc']['nickserv_password'] = gui.get_string('NickServ Password: ', password=True)
 
 config['modules']['irc']['port'] = gui.get_number('Port: [{}] '.format(default_port), None, default_port, True, False)
 
 # discord config
 print("\n~=~ Discord Configuration ~=~")
-config['modules']['discord']['email'] = input('Discord - Email: ')
-config['modules']['discord']['password'] = getpass.getpass('Discord - Password: ')
+config['modules']['discord']['email'] = gui.get_string('Discord - Email: ')
+config['modules']['discord']['password'] = gui.get_string('Discord - Password: ', password=True)
 
 # link config
 print('\n~=~ Link Configuration ~=~')
 print('To ignore a specific type of link, simply hit enter without specifying a name')
 links = {}
 while True:
-    name = input('Link Name: ').strip()
+    name = gui.get_string('Link Name: ').strip()
     slug = slugify(name)
     log = is_ok('Log this link? [n] ', False)
-    discord_chan = input('Discord Channel: ').strip()
-    irc_chan = input('IRC Channel: ').strip()
+    discord_chan = gui.get_string('Discord Channel: ').strip()
+    irc_chan = gui.get_string('IRC Channel: ').strip()
 
     if slug in links:
         overwrite = is_ok('Link with that name already exists, overwrite existing link [y]? ', True)
@@ -85,7 +85,7 @@ while True:
 
     another_link = is_ok('Setup another link [n]? ', False)
     if another_link:
-        print('') # newline between links
+        print()  # newline between links
     else:
         break
 
