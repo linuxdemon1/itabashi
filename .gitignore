@@ -28,7 +28,8 @@ $RECYCLE.BIN/
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
@@ -129,3 +130,4 @@ target/
 /config.json
 /itabashi.log
 
+venv/
