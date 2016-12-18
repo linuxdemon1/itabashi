@@ -6,6 +6,7 @@ import asyncio
 import aiohttp
 import discord
 import websockets
+
 from italib import backoff
 
 
@@ -16,17 +17,14 @@ class DiscordManager:
         self.events = event_manager
         self.loop = loop
 
-        self.dispatch_channels = [config['links'][name]['channels']['discord'] for name in config['links'] if 'discord' in config['links'][name]['channels']]
+        self.dispatch_channels = [config['links'][name]['channels']['discord'] for name in config['links'] if
+                                  'discord' in config['links'][name]['channels']]
         # simplifies down to a simple list of IRC chans -> Discord chans
-        self.channels = {
-            'irc': {},
-        }
+        self.channels = {}
         for name in config['links']:
             link = config['links'][name]['channels']
             if 'discord' in link and 'irc' in link:
-                if link['irc'] not in self.channels['irc']:
-                    self.channels['irc'][link['irc']] = []
-                if link['discord'] not in self.channels['irc'][link['irc']]:
+                if link['discord'] not in self.channels.setdefault('irc', {}).setdefault(link['irc'], []):
                     self.channels['irc'][link['irc']].append(link['discord'])
 
         self.discord_channels = {}
@@ -76,7 +74,7 @@ class DiscordManager:
                         websockets.InvalidHandshake,
                         websockets.WebSocketProtocolError) as e:
                     if isinstance(e, discord.ConnectionClosed) and e.code == 4004:
-                        raise # Do not reconnect on authentication failure
+                        raise  # Do not reconnect on authentication failure
                     self.logger.exception("discord.py disconnected, waiting and reconnecting")
                     yield from asyncio.sleep(retry.delay(), loop=self.loop)
 
