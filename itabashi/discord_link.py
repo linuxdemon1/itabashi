@@ -2,21 +2,19 @@
 # itabashi_discord.py: discord bot
 # Developed by Antonizoon for the Bibliotheca Anonoma
 import asyncio
-import sys
 
 import aiohttp
 import discord
 import websockets
 from italib import backoff
 
-loop = asyncio.get_event_loop()
-
 
 class DiscordManager:
-    def __init__(self, logger, config, event_manager):
+    def __init__(self, logger, config, event_manager, *, loop=asyncio.get_event_loop()):
         self.logger = logger
         self.config = config
         self.events = event_manager
+        self.loop = loop
 
         self.dispatch_channels = [config['links'][name]['channels']['discord'] for name in config['links'] if 'discord' in config['links'][name]['channels']]
         # simplifies down to a simple list of IRC chans -> Discord chans
@@ -59,8 +57,8 @@ class DiscordManager:
                 try:
                     yield from self.client.login(email, password)
                 except (discord.HTTPException, aiohttp.ClientError):
-                    logging.exception("discord.py failed to login, waiting and retrying")
-                    yield from asyncio.sleep(retry.delay())
+                    self.logger.exception("discord.py failed to login, waiting and retrying")
+                    yield from asyncio.sleep(retry.delay(), loop=self.loop)
                 else:
                     break
 
@@ -79,11 +77,11 @@ class DiscordManager:
                         websockets.WebSocketProtocolError) as e:
                     if isinstance(e, discord.ConnectionClosed) and e.code == 4004:
                         raise # Do not reconnect on authentication failure
-                    logging.exception("discord.py disconnected, waiting and reconnecting")
-                    yield from asyncio.sleep(retry.delay())
+                    self.logger.exception("discord.py disconnected, waiting and reconnecting")
+                    yield from asyncio.sleep(retry.delay(), loop=self.loop)
 
         # actually start running the client
-        asyncio.async(main_task())
+        asyncio.async(main_task(), loop=self.loop)
 
     # retrieve channel objects we use to send messages
     @asyncio.coroutine
@@ -134,9 +132,9 @@ class DiscordManager:
     def handle_irc_message(self, event):
         for chan in self.channels['irc'].get(event['channel'].name, []):
             assembled_message = '**<{}>** {}'.format(event['source'].nick, event['message'])
-            asyncio.async(self.client.send_message(self.discord_channels[chan], assembled_message))
+            asyncio.async(self.client.send_message(self.discord_channels[chan], assembled_message), loop=self.loop)
 
     def handle_irc_action(self, event):
         for chan in self.channels['irc'].get(event['channel'].name, []):
             assembled_message = '**\\* {}** {}'.format(event['source'].nick, event['message'])
-            asyncio.async(self.client.send_message(self.discord_channels[chan], assembled_message))
+            asyncio.async(self.client.send_message(self.discord_channels[chan], assembled_message), loop=self.loop)
