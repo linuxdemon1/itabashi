@@ -1,6 +1,6 @@
 import asyncio
 
-from link import RelayLink
+from itabashi.link import RelayLink
 
 
 class DiscordLink(RelayLink):

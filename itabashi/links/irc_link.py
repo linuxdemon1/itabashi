@@ -7,7 +7,7 @@ import girc
 from girc.formatting import escape, remove_formatting_codes
 
 import itabashi
-from link import RelayLink
+from itabashi.link import RelayLink
 
 msg_fmt = "<{nick}:{chan}> {msg}"
 action_fmt = "*{nick}:{chan} {msg}"
@@ -24,6 +24,7 @@ class IrcLink(RelayLink):
         self.ident = self.config.get('user', 'ita')
         self.gecos = self.config.get('realname', 'itabashi relay bot')
         self.link = None
+        self.reactor = None
 
         if self.use_ssl:
             self.ssl_context = SSLContext(PROTOCOL_SSLv23)
@@ -36,14 +37,14 @@ class IrcLink(RelayLink):
 
     @asyncio.coroutine
     def connect(self):
-        reactor = girc.Reactor()
-        reactor.register_event('in', 'raw', self.handle_reactor_raw_in, priority=1)
-        reactor.register_event('out', 'raw', self.handle_reactor_raw_out, priority=1)
-        reactor.register_event('in', 'ctcp', self.handle_reactor_ctcp)
-        reactor.register_event('in', 'pubmsg', self.handle_reactor_pubmsgs)
-        reactor.register_event('in', 'pubaction', self.handle_reactor_pubactions)
+        self.reactor = girc.Reactor()
+        self.reactor.register_event('in', 'raw', self.handle_reactor_raw_in, priority=1)
+        self.reactor.register_event('out', 'raw', self.handle_reactor_raw_out, priority=1)
+        self.reactor.register_event('in', 'ctcp', self.handle_reactor_ctcp)
+        self.reactor.register_event('in', 'pubmsg', self.handle_reactor_pubmsgs)
+        self.reactor.register_event('in', 'pubaction', self.handle_reactor_pubactions)
 
-        self.link = reactor.create_server('ita')
+        self.link = self.reactor.create_server('ita')
         self.link.set_user_info(self.nick, self.ident, self.gecos)
         self.link.join_channels(*self.channels)
         if 'nickserv_password' in self.config:
@@ -88,12 +89,14 @@ class IrcLink(RelayLink):
     def message_received(self, event, _type):
         if event['source'].is_me:
             return
+
         if _type == 'message':
             self.logger.info(msg_fmt.format(nick=event['source'], chan=event['channel'],
                                             msg=remove_formatting_codes(event['message'])))
         elif _type == 'action':
             self.logger.info(action_fmt.format(nick=event['source'], chan=event['channel'],
                                                msg=remove_formatting_codes(event['message'])))
+
         info = {
             'type': _type,
             'link': self,
