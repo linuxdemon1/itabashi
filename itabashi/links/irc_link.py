@@ -90,10 +90,10 @@ class IrcLink(RelayLink):
             return
 
         if _type == 'message':
-            event = MessageEvent(nick=info['source'].nick, chan=info['channel'].name, link=self,
+            event = MessageEvent(nick=info['source'].nick, chan=info['channel'].name, conn=self,
                                  message=remove_formatting_codes(info['message']))
         elif _type == 'action':
-            event = ActionEvent(nick=info['source'].nick, chan=info['channel'].name, link=self,
+            event = ActionEvent(nick=info['source'].nick, chan=info['channel'].name, conn=self,
                                 message=remove_formatting_codes(info['message']))
         else:
             raise ValueError('Invalid value for parameter _type: {}'.format(_type))
