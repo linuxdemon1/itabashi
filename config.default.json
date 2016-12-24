@@ -22,7 +22,7 @@
       "nickname": "Itabashi",
       "port": 6667,
       "server": "irc.esper.net",
-      "tls": true,
+      "tls": false,
       "tls_verify": false
     }
   ],
