@@ -1,6 +1,7 @@
 import asyncio
 
 from itabashi.link import RelayLink
+from itabashi.event import Event, MessageEvent, EventType
 
 
 class DiscordLink(RelayLink):
@@ -12,8 +13,19 @@ class DiscordLink(RelayLink):
         pass
 
     @asyncio.coroutine
-    def message(self, text: str):
-        pass
+    def message(self, event: Event, target: str):
+        if isinstance(event, MessageEvent):
+            self.logger.debug("[{!r}] >> {}".format(self, self.format_event(event)))
 
     def __repr__(self):
         return "Discord:{}".format(self.name)
+
+    def format_event(self, event: MessageEvent):
+        if event.type == EventType.action:
+            return "*{chan}@{server!r}:{nick} {message}".format(chan=event.chan, nick=event.nick, message=event.message,
+                                                                server=event.conn)
+        elif event.type == EventType.message:
+            return "<{chan}@{server!r}:{nick}> {message}".format(chan=event.chan, nick=event.nick, message=event.message,
+                                                                 server=event.conn)
+        else:
+            raise ValueError('No format exists for event type: {!r}'.format(event.type))

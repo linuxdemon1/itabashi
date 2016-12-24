@@ -1,6 +1,8 @@
 import abc
 import asyncio
 
+from itabashi.event import Event
+
 
 class RelayLink(metaclass=abc.ABCMeta):
     def __init__(self, name: str, _type: str, bot, config: dict):
@@ -30,12 +32,12 @@ class RelayLink(metaclass=abc.ABCMeta):
     @asyncio.coroutine
     @abc.abstractmethod
     def connect(self):
-        pass
+        raise NotImplementedError
 
     @asyncio.coroutine
     @abc.abstractmethod
-    def message(self, text: str):
-        pass
+    def message(self, event: Event, target: str):
+        raise NotImplementedError
 
     @property
     def name(self) -> str:

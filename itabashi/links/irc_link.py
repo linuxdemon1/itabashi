@@ -7,8 +7,9 @@ import girc
 from girc.formatting import escape, remove_formatting_codes
 
 import itabashi
-from itabashi.event import MessageEvent, ActionEvent
+from itabashi.event import MessageEvent, ActionEvent, EventType
 from itabashi.link import RelayLink
+from itabashi.event import Event
 
 
 class IrcLink(RelayLink):
@@ -53,8 +54,19 @@ class IrcLink(RelayLink):
         self.logger.info('irc: Started and connected to {}/{}'.format(self.server, self.port))
 
     @asyncio.coroutine
-    def message(self, text: str):
-        pass
+    def message(self, event: Event, target: str):
+        if isinstance(event, MessageEvent):
+            self.logger.debug("[{!r}] >> {}".format(self, self.format_event(event)))
+
+    def format_event(self, event: MessageEvent):
+        if event.type == EventType.action:
+            return "*{chan}@{server!r}:{nick} {message}".format(chan=event.chan, nick=event.nick, message=event.message,
+                                                                server=event.conn)
+        elif event.type == EventType.message:
+            return "<{chan}@{server!r}:{nick}> {message}".format(chan=event.chan, nick=event.nick, message=event.message,
+                                                                 server=event.conn)
+        else:
+            raise ValueError('No format exists for event type: {!r}'.format(event.type))
 
     # display
     def handle_reactor_raw_in(self, event: dict):
