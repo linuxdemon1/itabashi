@@ -7,13 +7,12 @@ import girc
 from girc.formatting import escape, remove_formatting_codes
 
 import itabashi
-from bot import RelayBot
 from itabashi.event import MessageEvent, ActionEvent
 from itabashi.link import RelayLink
 
 
 class IrcLink(RelayLink):
-    def __init__(self, name: str, bot: RelayBot, config: dict):
+    def __init__(self, name: str, bot, config: dict):
         super().__init__(name, 'irc', bot, config)
         self.server = self.config['server']
         self.port = self.config['port']
@@ -98,7 +97,7 @@ class IrcLink(RelayLink):
         else:
             raise ValueError('Invalid value for parameter _type: {}'.format(_type))
 
-        self.bot.handle_message(event)
+        asyncio.async(self.bot.handle_message(event), loop=self.loop)
 
     def __repr__(self) -> str:
         return "IRC:{}".format(self.name)

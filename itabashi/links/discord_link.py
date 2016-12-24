@@ -1,11 +1,10 @@
 import asyncio
 
-from itabashi.bot import RelayBot
 from itabashi.link import RelayLink
 
 
 class DiscordLink(RelayLink):
-    def __init__(self, name: str, bot: RelayBot, config: dict):
+    def __init__(self, name: str, bot, config: dict):
         super().__init__(name, 'discord', bot, config)
 
     @asyncio.coroutine

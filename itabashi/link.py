@@ -1,11 +1,9 @@
 import abc
 import asyncio
 
-from itabashi.bot import RelayBot
-
 
 class RelayLink(metaclass=abc.ABCMeta):
-    def __init__(self, name: str, _type: str, bot: RelayBot, config: dict):
+    def __init__(self, name: str, _type: str, bot, config: dict):
         """
         :param _type: The type of link, eg irc/discord
         :param name: The name of this connection
@@ -47,7 +45,7 @@ class RelayLink(metaclass=abc.ABCMeta):
         return self.__type
 
     @property
-    def bot(self) -> RelayBot:
+    def bot(self):
         return self.__bot
 
     @property

@@ -1,8 +1,5 @@
 import enum
 
-from bot import RelayBot
-from link import RelayLink
-
 
 @enum.unique
 class EventType(enum.Enum):
@@ -12,7 +9,7 @@ class EventType(enum.Enum):
 
 
 class Event:
-    def __init__(self, *, bot: RelayBot = None, conn: RelayLink = None, base_event=None,
+    def __init__(self, *, bot=None, conn=None, base_event=None,
                  event_type: EventType = EventType.other, nick: str = None, chan: str = None):
         self.bot = bot
         self.conn = conn
@@ -31,14 +28,14 @@ class Event:
 
 
 class MessageEvent(Event):
-    def __init__(self, *, bot: RelayBot = None, conn: RelayLink = None, base_event=None, nick: str = None,
+    def __init__(self, *, bot=None, conn=None, base_event=None, nick: str = None,
                  chan: str = None, message: str = None):
         super().__init__(bot=bot, conn=conn, base_event=base_event, event_type=EventType.message, nick=nick, chan=chan)
         self.message = message
 
 
 class ActionEvent(Event):
-    def __init__(self, *, bot: RelayBot = None, conn: RelayLink = None, base_event=None, nick: str = None,
+    def __init__(self, *, bot=None, conn=None, base_event=None, nick: str = None,
                  chan: str = None, message: str = None):
         super().__init__(bot=bot, conn=conn, base_event=base_event, event_type=EventType.action, nick=nick, chan=chan)
         self.message = message
