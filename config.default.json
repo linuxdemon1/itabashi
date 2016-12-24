@@ -26,5 +26,9 @@
       "tls_verify": false
     }
   ],
-  "version": 2
+  "version": 2,
+  "logging": {
+        "console_debug": false,
+        "file_debug": true,
+    }
 }
