@@ -28,7 +28,7 @@
   ],
   "version": 2,
   "logging": {
-        "console_debug": false,
-        "file_debug": true,
-    }
+    "console_debug": false,
+    "file_debug": true
+  }
 }
