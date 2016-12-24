@@ -7,12 +7,13 @@ import girc
 from girc.formatting import escape, remove_formatting_codes
 
 import itabashi
+from bot import RelayBot
 from itabashi.event import MessageEvent, ActionEvent
 from itabashi.link import RelayLink
 
 
 class IrcLink(RelayLink):
-    def __init__(self, name, bot, config):
+    def __init__(self, name: str, bot: RelayBot, config: dict):
         super().__init__(name, 'irc', bot, config)
         self.server = self.config['server']
         self.port = self.config['port']
@@ -52,24 +53,24 @@ class IrcLink(RelayLink):
 
         self.logger.info('irc: Started and connected to {}/{}'.format(self.server, self.port))
 
-    def message(self, text):
+    def message(self, text: str):
         pass
 
     # display
-    def handle_reactor_raw_in(self, event):
+    def handle_reactor_raw_in(self, event: dict):
         try:
             self.logger.debug('raw irc: {}  -> {}'.format(event['server'].name, escape(event['data'])))
         except (UnicodeDecodeError, UnicodeEncodeError):
             self.logger.debug('raw irc: {}  -> {}'.format(event['server'].name, 'Data coule not be displayed'))
 
-    def handle_reactor_raw_out(self, event):
+    def handle_reactor_raw_out(self, event: dict):
         try:
             self.logger.debug('raw irc: {} <-  {}'.format(event['server'].name, escape(event['data'])))
         except (UnicodeDecodeError, UnicodeEncodeError):
             self.logger.debug('raw irc: {} <-  {}'.format(event['server'].name, 'Data could not be displayed'))
 
     # VERSION and such
-    def handle_reactor_ctcp(self, event):
+    def handle_reactor_ctcp(self, event: dict):
         if event['ctcp_verb'] == 'version':
             event['source'].ctcp_reply('VERSION', 'Itabashi (板橋)/{}'.format(itabashi.__version__))
         elif event['ctcp_verb'] == 'source':
@@ -78,13 +79,13 @@ class IrcLink(RelayLink):
             event['source'].ctcp_reply('CLIENTINFO', 'ACTION CLIENTINFO SOURCE VERSION')
 
     # dispatching messages
-    def handle_reactor_pubmsgs(self, event):
+    def handle_reactor_pubmsgs(self, event: dict):
         self.message_received(event, 'message')
 
-    def handle_reactor_pubactions(self, event):
+    def handle_reactor_pubactions(self, event: dict):
         self.message_received(event, 'action')
 
-    def message_received(self, info, _type):
+    def message_received(self, info: dict, _type: str):
         if info['source'].is_me:
             return
 
@@ -99,5 +100,5 @@ class IrcLink(RelayLink):
 
         self.bot.handle_message(event)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "IRC:{}".format(self.name)

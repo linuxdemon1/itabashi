@@ -1,14 +1,13 @@
 import abc
 import asyncio
 
+from itabashi.bot import RelayBot
+
 
 class RelayLink(metaclass=abc.ABCMeta):
-    def __init__(self, name, _type, bot, config):
+    def __init__(self, name: str, _type: str, bot: RelayBot, config: dict):
         """
-        :type name: str
-        :type _type: str
-        :type bot: RelayBot
-        :type config: dict
+        :param _type: The type of link, eg irc/discord
         :param name: The name of this connection
         :param bot: The bot this connection is running under
         :param config: The config for this connection
@@ -22,12 +21,12 @@ class RelayLink(metaclass=abc.ABCMeta):
         self.connected = False
         self.logger = bot.logger
 
-    def set_channels(self, chans):
+    def set_channels(self, chans: list):
         if isinstance(chans, str):
             chans = [chans]
         self.channels = chans
 
-    def add_channel(self, chan):
+    def add_channel(self, chan: str):
         self.channels.append(chan)
 
     @asyncio.coroutine
@@ -36,25 +35,25 @@ class RelayLink(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
-    def message(self, text):
+    def message(self, text: str):
         pass
 
     @property
-    def name(self):
+    def name(self) -> str:
         return self.__name
 
     @property
-    def type(self):
+    def type(self) -> str:
         return self.__type
 
     @property
-    def bot(self):
+    def bot(self) -> RelayBot:
         return self.__bot
 
     @property
-    def loop(self):
+    def loop(self) -> asyncio.AbstractEventLoop:
         return self.__loop
 
     @abc.abstractmethod
-    def __repr__(self):
+    def __repr__(self) -> str:
         return "Unknown"

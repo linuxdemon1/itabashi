@@ -1,5 +1,6 @@
 import asyncio
 import json
+from logging import Logger
 
 import italib
 from itabashi.links.discord_link import DiscordLink
@@ -16,7 +17,7 @@ action_log_fmt = "[{server!r}] *{nick}:{chan} {msg}"
 
 
 class RelayBot:
-    def __init__(self, logger, *, loop=asyncio.get_event_loop()):
+    def __init__(self, logger: Logger, *, loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
         self.stopped_future = asyncio.Future()
         self.loop = loop
         self.modules = {}
@@ -27,7 +28,7 @@ class RelayBot:
         self.links = self.config["links"]
         self.logger = logger
 
-    def run(self):
+    def run(self) -> bool:
         # check config version
         if self.config.get('version', 0) < italib.CURRENT_CONFIG_VERSION:
             # TODO(dan): automagic config file updating
@@ -65,4 +66,4 @@ class RelayBot:
             self.logger.info(msg_log_fmt.format(chan=event.chan, nick=event.nick, msg=event.message,
                                                 server=event.link))
         else:
-            self.logger("Unknown event received: {!r}".format(event))
+            self.logger.info("Unknown event received: {!r}".format(event))
