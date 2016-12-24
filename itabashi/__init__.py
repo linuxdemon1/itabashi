@@ -4,9 +4,9 @@ import os
 import logging
 import logging.config
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'
 
-__all__ = ['bot', 'link']
+__all__ = ['bot', 'link', 'logging_dir', 'links']
 
 logging_dir = ""
 
