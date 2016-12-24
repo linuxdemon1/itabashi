@@ -7,6 +7,7 @@ import girc
 from girc.formatting import escape, remove_formatting_codes
 
 import itabashi
+from itabashi.event import MessageEvent, ActionEvent
 from itabashi.link import RelayLink
 
 
@@ -83,18 +84,20 @@ class IrcLink(RelayLink):
     def handle_reactor_pubactions(self, event):
         self.message_received(event, 'action')
 
-    def message_received(self, event, _type):
-        if event['source'].is_me:
+    def message_received(self, info, _type):
+        if info['source'].is_me:
             return
 
-        info = {
-            'type': _type,
-            'link': self,
-            'channel': event['channel'].name,
-            'sender': event['source'].nick,
-            'message': remove_formatting_codes(event['message'])
-        }
-        self.bot.handle_message(info)
+        if _type == 'message':
+            event = MessageEvent(nick=info['source'].nick, chan=info['channel'].name, link=self,
+                                 message=remove_formatting_codes(info['message']))
+        elif _type == 'action':
+            event = ActionEvent(nick=info['source'].nick, chan=info['channel'].name, link=self,
+                                message=remove_formatting_codes(info['message']))
+        else:
+            raise ValueError('Invalid value for parameter _type: {}'.format(_type))
+
+        self.bot.handle_message(event)
 
     def __repr__(self):
         return "IRC:{}".format(self.name)
