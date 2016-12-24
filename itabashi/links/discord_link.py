@@ -11,6 +11,7 @@ class DiscordLink(RelayLink):
     def connect(self):
         pass
 
+    @asyncio.coroutine
     def message(self, text: str):
         pass
 

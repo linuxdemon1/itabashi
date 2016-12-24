@@ -32,6 +32,7 @@ class RelayLink(metaclass=abc.ABCMeta):
     def connect(self):
         pass
 
+    @asyncio.coroutine
     @abc.abstractmethod
     def message(self, text: str):
         pass

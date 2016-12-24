@@ -52,6 +52,7 @@ class IrcLink(RelayLink):
 
         self.logger.info('irc: Started and connected to {}/{}'.format(self.server, self.port))
 
+    @asyncio.coroutine
     def message(self, text: str):
         pass
 
