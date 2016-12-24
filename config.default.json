@@ -1,0 +1,30 @@
+{
+  "links": {
+    "link1": {
+      "channels": {
+        "discordlink1": "relay channel",
+        "irclink1": "#itabashi"
+      },
+      "log": true,
+      "name": "Link1"
+    }
+  },
+  "connections": [
+    {
+      "name": "discordlink1",
+      "type": "discord",
+      "email": "name@domain.tld",
+      "password": ""
+    },
+    {
+      "name": "irclink1",
+      "type": "irc",
+      "nickname": "Itabashi",
+      "port": 6667,
+      "server": "irc.esper.net",
+      "tls": true,
+      "tls_verify": false
+    }
+  ],
+  "version": 2
+}

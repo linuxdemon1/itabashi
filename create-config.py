@@ -1,7 +1,14 @@
 #!/usr/bin/env python3
 # create a config file for use with itabashi
+
 # TODO is this future import really needed?
 from __future__ import print_function
+
+# TODO update this to the new config file format
+
+print('This script has not been updated to the latest config file format')
+print('Please populate your configuration manually, according to the format in config.default.json')
+exit(1)
 
 import json
 
