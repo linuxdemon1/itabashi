@@ -57,6 +57,7 @@ class IrcLink(RelayLink):
     def message(self, event: Event, target: str):
         if isinstance(event, MessageEvent):
             self.logger.debug("[{!r}] >> {}: {}".format(self, target, self.format_event(event)))
+            self.link.msg(target, self.format_event(event))
 
     def format_event(self, event: MessageEvent):
         # TODO(linuxdaemon) cleaner format
