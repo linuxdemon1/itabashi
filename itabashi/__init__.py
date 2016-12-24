@@ -6,7 +6,7 @@ import logging.config
 
 __version__ = '0.2.0'
 
-__all__ = ['bot', 'link', 'logging_dir', 'links']
+__all__ = ['bot', 'link', 'logging_dir', 'links', 'event']
 
 logging_dir = ""
 
