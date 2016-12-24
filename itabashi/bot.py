@@ -4,11 +4,15 @@ import json
 import italib
 from itabashi.links.discord_link import DiscordLink
 from itabashi.links.irc_link import IrcLink
+from itabashi.event import Event, MessageEvent, ActionEvent
 
 get_link_by_type = {
     'irc': IrcLink,
     'discord': DiscordLink
 }
+
+msg_log_fmt = "[{server!r}] <{nick}:{chan}> {msg}"
+action_log_fmt = "[{server!r}] *{nick}:{chan} {msg}"
 
 
 class RelayBot:
@@ -52,5 +56,13 @@ class RelayBot:
 
         yield from asyncio.gather(*[conn.connect() for conn in self.modules.values()], loop=self.loop)
 
-    def handle_message(self, event):
-        pass
+    def handle_message(self, event: Event):
+        # TODO handle more events
+        if isinstance(event, ActionEvent):
+            self.logger.info(action_log_fmt.format(chan=event.chan, nick=event.nick, msg=event.message,
+                                                   server=event.link))
+        elif isinstance(event, MessageEvent):
+            self.logger.info(msg_log_fmt.format(chan=event.chan, nick=event.nick, msg=event.message,
+                                                server=event.link))
+        else:
+            self.logger("Unknown event received: {!r}".format(event))
