@@ -6,7 +6,7 @@ class RelayLink(metaclass=abc.ABCMeta):
     def __init__(self, name, _type, bot, config):
         """
         :type name: str
-        :type type: str
+        :type _type: str
         :type bot: RelayBot
         :type config: dict
         :param name: The name of this connection
