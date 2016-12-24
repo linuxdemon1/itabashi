@@ -18,7 +18,7 @@ class RelayBot:
         self.modules = {}
         self.links = {}
         with open('config.json') as f:
-            self.config = json.loads(f.read())[0]
+            self.config = json.loads(f.read())
 
         self.links = self.config["links"]
         self.logger = logger
