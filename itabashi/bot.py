@@ -1,6 +1,7 @@
 import asyncio
 import json
 
+import italib
 from itabashi.links.discord_link import DiscordLink
 from itabashi.links.irc_link import IrcLink
 
@@ -12,6 +13,7 @@ get_link_by_type = {
 
 class RelayBot:
     def __init__(self, logger, *, loop=asyncio.get_event_loop()):
+        self.stopped_future = asyncio.Future()
         self.loop = loop
         self.modules = {}
         self.links = {}
@@ -21,11 +23,25 @@ class RelayBot:
         self.links = self.config["links"]
         self.logger = logger
 
+    def run(self):
+        # check config version
+        if self.config.get('version', 0) < italib.CURRENT_CONFIG_VERSION:
+            # TODO(dan): automagic config file updating
+            self.logger.fatal('Config format is too old, please update it.')
+            print('Config format is too old, please update it.')
+            exit(1)
+
+        self.logger.info('Creating links')
+        self.loop.run_until_complete(self.link())
+        restart = self.loop.run_until_complete(self.stopped_future)
+        self.loop.close()
+        return restart
+
     @asyncio.coroutine
     def link(self):
         for connection in self.config['connections']:
             self.modules[connection['name']] = get_link_by_type[connection['type']](connection['name'], self,
-                                                                                    connection, loop=self.loop)
+                                                                                    connection)
 
         for name in self.links:
             for link_name, chan in self.links[name]['channels'].items():
