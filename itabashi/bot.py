@@ -57,13 +57,25 @@ class RelayBot:
 
         yield from asyncio.gather(*[conn.connect() for conn in self.modules.values()], loop=self.loop)
 
+    @asyncio.coroutine
     def handle_message(self, event: Event):
         # TODO handle more events
         if isinstance(event, ActionEvent):
             self.logger.info(action_log_fmt.format(chan=event.chan, nick=event.nick, msg=event.message,
-                                                   server=event.link))
+                                                   server=event.conn))
         elif isinstance(event, MessageEvent):
             self.logger.info(msg_log_fmt.format(chan=event.chan, nick=event.nick, msg=event.message,
-                                                server=event.link))
+                                                server=event.conn))
         else:
             self.logger.info("Unknown event received: {!r}".format(event))
+
+        if isinstance(event, MessageEvent):
+            links = self.get_links_to_send_to(event)
+            yield from asyncio.gather(*[link.message(event) for link in links])
+
+    def get_links_to_send_to(self, event: Event) -> list:
+        links = []
+        for name, link in self.links:
+            if event.conn.name in link['channels'] and event.chan.lower() == link['channels'][event.conn.name].lower():
+                links.append(link)
+        return links
