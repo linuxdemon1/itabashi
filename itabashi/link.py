@@ -54,3 +54,7 @@ class RelayLink(metaclass=abc.ABCMeta):
     @property
     def loop(self):
         return self.__loop
+
+    @abc.abstractmethod
+    def __repr__(self):
+        return "Unknown"
