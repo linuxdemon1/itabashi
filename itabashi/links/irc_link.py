@@ -9,9 +9,6 @@ from girc.formatting import escape, remove_formatting_codes
 import itabashi
 from itabashi.link import RelayLink
 
-msg_fmt = "<{nick}:{chan}> {msg}"
-action_fmt = "*{nick}:{chan} {msg}"
-
 
 class IrcLink(RelayLink):
     def __init__(self, name, bot, config):
@@ -90,18 +87,14 @@ class IrcLink(RelayLink):
         if event['source'].is_me:
             return
 
-        if _type == 'message':
-            self.logger.info(msg_fmt.format(nick=event['source'], chan=event['channel'],
-                                            msg=remove_formatting_codes(event['message'])))
-        elif _type == 'action':
-            self.logger.info(action_fmt.format(nick=event['source'], chan=event['channel'],
-                                               msg=remove_formatting_codes(event['message'])))
-
         info = {
             'type': _type,
             'link': self,
-            'channel': event['channel'],
-            'source': event['source'],
+            'channel': event['channel'].name,
+            'sender': event['source'].nick,
             'message': remove_formatting_codes(event['message'])
         }
         self.bot.handle_message(info)
+
+    def __repr__(self):
+        return "IRC:{}".format(self.name)

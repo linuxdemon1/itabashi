@@ -13,3 +13,6 @@ class DiscordLink(RelayLink):
 
     def message(self, text):
         pass
+
+    def __repr__(self):
+        return "Discord:{}".format(self.name)
