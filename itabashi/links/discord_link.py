@@ -21,6 +21,7 @@ class DiscordLink(RelayLink):
         return "Discord:{}".format(self.name)
 
     def format_event(self, event: MessageEvent):
+        # TODO(linuxdaemon) cleaner format
         if event.type == EventType.action:
             return "*{chan}@{server!r}:{nick} {message}".format(chan=event.chan, nick=event.nick, message=event.message,
                                                                 server=event.conn)

@@ -59,6 +59,7 @@ class IrcLink(RelayLink):
             self.logger.debug("[{!r}] >> {}".format(self, self.format_event(event)))
 
     def format_event(self, event: MessageEvent):
+        # TODO(linuxdaemon) cleaner format
         if event.type == EventType.action:
             return "*{chan}@{server!r}:{nick} {message}".format(chan=event.chan, nick=event.nick, message=event.message,
                                                                 server=event.conn)
