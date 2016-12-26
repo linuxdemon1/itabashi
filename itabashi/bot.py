@@ -1,11 +1,14 @@
+"""
+The main bot to handle all the links and relays
+"""
 import asyncio
 import json
 from logging import Logger
 
 import italib
+from itabashi.event import Event, MessageEvent, ActionEvent
 from itabashi.links.discord_link import DiscordLink
 from itabashi.links.irc_link import IrcLink
-from itabashi.event import Event, MessageEvent, ActionEvent
 
 get_link_by_type = {
     'irc': IrcLink,
@@ -17,6 +20,10 @@ action_log_fmt = "[{server!r}] *{nick}:{chan} {msg}"
 
 
 class RelayBot:
+    """
+    Bot to handle relaying messages between links
+    """
+
     def __init__(self, logger: Logger, *, loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()):
         self.stopped_future = asyncio.Future()
         self.loop = loop
@@ -29,6 +36,11 @@ class RelayBot:
         self.logger = logger
 
     def run(self) -> bool:
+        """
+        Runs the bot
+        :return: Returns whether or not the bot should be restarted
+        """
+        # TODO(linuxdaemon): implement the restart functionality
         # check config version
         if self.config.get('version', 0) < italib.CURRENT_CONFIG_VERSION:
             # TODO(dan): automagic config file updating
@@ -44,6 +56,9 @@ class RelayBot:
 
     @asyncio.coroutine
     def link(self):
+        """
+        Initiate the outgoing links
+        """
         for connection in self.config['connections']:
             self.connections[connection['name']] = get_link_by_type[connection['type']](connection['name'], self,
                                                                                         connection)
@@ -60,6 +75,10 @@ class RelayBot:
 
     @asyncio.coroutine
     def handle_message(self, event: Event):
+        """
+        Handle a message form one of our links
+        :param event: The event corresponding to the message to handle
+        """
         # TODO handle more events
         if isinstance(event, ActionEvent):
             self.logger.info(action_log_fmt.format(chan=event.chan, nick=event.nick, msg=event.message,
@@ -80,6 +99,11 @@ class RelayBot:
             yield from asyncio.gather(*tasks, loop=self.loop)
 
     def get_links_to_send_to(self, event: Event) -> list:
+        """
+        Get what links a message should be relayed to
+        :param event: The event corresponding to the message
+        :return: The list of links to relay to
+        """
         links = {}
         chans = {}
         # TODO(linuxdaemon): clean up this mess

@@ -28,9 +28,13 @@ def main():
 
         _bot = RelayBot(logger)
         restart = _bot.run()
+        if restart:
+            ...
+            # TODO implement code to handle restarting the bot
     else:
         print('No valid arguments specified')
         exit(1)
+
 
 if __name__ == "__main__":
     main()

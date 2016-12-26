@@ -1,8 +1,7 @@
 import json
-import os
-
 import logging
 import logging.config
+import os
 
 __version__ = '0.2.0'
 
@@ -84,5 +83,6 @@ def _setup():
         dict_config["loggers"]["itabashi"]["handlers"].append("debug_file")
 
     logging.config.dictConfig(dict_config)
+
 
 _setup()

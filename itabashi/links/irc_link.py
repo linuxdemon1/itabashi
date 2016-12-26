@@ -1,3 +1,6 @@
+"""
+RelayLink implementation for IRC
+"""
 import asyncio
 import ssl
 from _ssl import PROTOCOL_SSLv23
@@ -7,12 +10,16 @@ import girc
 from girc.formatting import escape, remove_formatting_codes
 
 import itabashi
+from itabashi.event import Event
 from itabashi.event import MessageEvent, ActionEvent, EventType
 from itabashi.link import RelayLink
-from itabashi.event import Event
 
 
 class IrcLink(RelayLink):
+    """
+    Provides an IRC link to RelayBot
+    """
+
     def __init__(self, name: str, bot, config: dict):
         super().__init__(name, 'irc', bot, config)
         self.server = self.config['server']
@@ -36,6 +43,9 @@ class IrcLink(RelayLink):
 
     @asyncio.coroutine
     def connect(self):
+        """
+        Connects to the IRC server
+        """
         self.reactor = girc.Reactor()
         self.reactor.register_event('in', 'raw', self.handle_reactor_raw_in, priority=1)
         self.reactor.register_event('out', 'raw', self.handle_reactor_raw_out, priority=1)
@@ -55,18 +65,30 @@ class IrcLink(RelayLink):
 
     @asyncio.coroutine
     def message(self, event: Event, target: str):
+        """
+        Sends a message to the IRC server
+        :param event: The event we should relay
+        :param target: Where to send the message
+        """
         if isinstance(event, MessageEvent):
             self.logger.debug("[{!r}] >> {}: {}".format(self, target, self.format_event(event)))
             self.link.msg(target, self.format_event(event))
 
     def format_event(self, event: MessageEvent):
+        """
+        Format an event to be relayed out to the link
+        :param event: The event to format
+        :return: The formatted string
+        """
         # TODO(linuxdaemon) cleaner format
         if event.type == EventType.action:
-            return "[{chan}@{server!r}] *{nick} {message}".format(chan=event.chan, nick=event.nick, message=event.message,
-                                                                server=event.conn)
+            return "[{chan}@{server!r}] *{nick} {message}".format(chan=event.chan, nick=event.nick,
+                                                                  message=event.message,
+                                                                  server=event.conn)
         elif event.type == EventType.message:
-            return "[{chan}@{server!r}] <{nick}> {message}".format(chan=event.chan, nick=event.nick, message=event.message,
-                                                                 server=event.conn)
+            return "[{chan}@{server!r}] <{nick}> {message}".format(chan=event.chan, nick=event.nick,
+                                                                   message=event.message,
+                                                                   server=event.conn)
         else:
             raise ValueError('No format exists for event type: {!r}'.format(event.type))
 

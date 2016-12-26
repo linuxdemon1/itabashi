@@ -1,12 +1,16 @@
+"""
+RelayLink implementation for Discord
+"""
 import asyncio
 
 import aiohttp
 import discord
 import websockets
+from discord import Message
 
-from italib import backoff
-from itabashi.link import RelayLink
 from itabashi.event import Event, MessageEvent, EventType
+from itabashi.link import RelayLink
+from italib import backoff
 
 msg_fmt = "[{chan}@{server!r}] **<{nick}>** {message}"
 act_fmt = "[{chan}@{server!r}] **\\* {nick}** {message}"
@@ -16,6 +20,10 @@ act_fmt_raw = "[{chan}@{server!r}] *{nick} {message}"
 
 
 class DiscordLink(RelayLink):
+    """
+    Provides a Discord link to RelayBot
+    """
+
     def __init__(self, name: str, bot, config: dict):
         super().__init__(name, 'discord', bot, config)
         self.discord_channels = {}
@@ -23,8 +31,13 @@ class DiscordLink(RelayLink):
 
     @asyncio.coroutine
     def connect(self):
+        """
+        Connects to the Discord API and loads the channel list
+        """
+        # register the event handlers
         self.client.event(self.on_ready)
         self.client.event(self.on_message)
+
         # guided by https://gist.github.com/Hornwitser/93aceb86533ed3538b6f
         # thanks Hornwitser!
         retry = backoff.ExponentialBackoff()
@@ -32,6 +45,7 @@ class DiscordLink(RelayLink):
         # login to Discord
         while True:
             try:
+                # if there is an oauth key in the config, us that instead, otherwise use the email and password
                 if 'oauth' in self.config:
                     yield from self.client.login(self.config['oauth'])
                 else:
@@ -63,6 +77,9 @@ class DiscordLink(RelayLink):
     # retrieve channel objects we use to send messages
     @asyncio.coroutine
     def on_ready(self):
+        """
+        Handles when we have successfully connected to Discord
+        """
         self.logger.debug('Discord -- Logged in as')
         self.logger.debug(self.client.user.name)
         self.logger.debug(self.client.user.id)
@@ -78,7 +95,11 @@ class DiscordLink(RelayLink):
 
     # dispatching messages
     @asyncio.coroutine
-    def on_message(self, message):
+    def on_message(self, message: Message):
+        """
+        Handles when we have received a message from the Discord API
+        :param message: The message object received from the API
+        """
         self.logger.debug('discord: raw 1')
         # self.logger.debug('discord: raw 2')
         # dispatch all but our own messages
@@ -89,6 +110,7 @@ class DiscordLink(RelayLink):
             for attachment in message.attachments:
                 full_message.append(attachment.get('url', 'No URL for attachment'))
 
+            # Create an event corresponding to this message end pass it off to the bot to ahndle
             event = MessageEvent(bot=self.bot, conn=self, nick="{u.name}#{u.discriminator}".format(u=message.author),
                                  chan=str(message.channel.name), message=' '.join(full_message))
             self.logger.debug('discord: raw 2 - dispatching')
@@ -96,6 +118,11 @@ class DiscordLink(RelayLink):
 
     @asyncio.coroutine
     def message(self, event: Event, target: str):
+        """
+        Send a message out on this linmk
+        :param event: The Event object to forward
+        :param target: Where to send this message
+        """
         if isinstance(event, MessageEvent):
             self.logger.debug("[{!r}] >> {}: {}".format(self, target, self.format_event(event, True)))
             assembled_message = self.format_event(event)
@@ -105,6 +132,12 @@ class DiscordLink(RelayLink):
         return "Discord:{}".format(self.name)
 
     def format_event(self, event: MessageEvent, raw: bool = False):
+        """
+        Format an event to be relayed out to the link
+        :param event: The event to format
+        :param raw: Should this be a raw or stylized output
+        :return: The formatted string
+        """
         # TODO(linuxdaemon) cleaner format
         if event.type == EventType.action:
             if raw:
