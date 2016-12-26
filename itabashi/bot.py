@@ -49,11 +49,12 @@ class RelayBot:
                                                                                         connection)
 
         for name in self.links:
-            for link_name, chan in self.links[name]['channels'].items():
-                if link_name not in self.connections:
+            for chan in self.links[name]['channels']:
+                if chan["connection"] not in self.connections:
                     raise ValueError(
                         'Connection {} not defined in configuration but is expected by link {}'.format(link_name, name))
-                self.connections[link_name].add_channel(chan)
+                for c in chan["channels"]:
+                    self.connections[chan["connection"]].add_channel(c)
 
         yield from asyncio.gather(*[conn.connect() for conn in self.connections.values()], loop=self.loop)
 
@@ -71,15 +72,25 @@ class RelayBot:
 
         if isinstance(event, MessageEvent):
             links = self.get_links_to_send_to(event)
-            conns = [(self.connections[name.lower()], chan) for name, chan in links]
-            yield from asyncio.gather(*[conn.message(event=event, target=chan) for conn, chan in conns])
+            conns = [(self.connections[name.lower()], chans) for name, chans in links]
+            tasks = []
+            for conn, chans in conns:
+                for chan in chans:
+                    tasks.append(conn.message(event=event, target=chan))
+            yield from asyncio.gather(*tasks, loop=self.loop)
 
     def get_links_to_send_to(self, event: Event) -> list:
-        links = []
+        links = {}
+        chans = {}
+        # TODO(linuxdaemon): clean up this mess
         for name, link in self.links.items():
-            if event.conn.name in link['channels'] and event.chan.lower() == link['channels'][event.conn.name].lower():
-                for conn, chan in link['channels'].items():
-                    if conn == event.conn.name and chan.lower() == event.chan.lower():
-                        continue
-                    links.append((conn, chan))
-        return links
+            for chan in link['channels']:
+                if event.conn.name.lower() == chan['connection'].lower() \
+                        and event.chan.lower() in chan['channels']:
+                    links[name] = link
+                    break
+        for name, link in links.items():
+            for chan in link['channels']:
+                chans.setdefault(chan['connection'], []).extend(chan['channels'])
+        chans[event.conn.name.lower()].remove(event.chan.lower())
+        return list(chans.items())

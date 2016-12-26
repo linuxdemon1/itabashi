@@ -1,10 +1,29 @@
 {
   "links": {
     "link1": {
-      "channels": {
-        "discordlink1": "relay channel",
-        "irclink1": "#itabashi"
-      },
+      "channels": [
+        {
+          "connection": "discordlink1",
+          "channels": [
+            "relay channel",
+            "relay channel 2"
+          ]
+        },
+        {
+          "connection": "discordlink2",
+          "channels": [
+            "relay channel 3",
+            "relay channel 4"
+          ]
+        },
+        {
+          "connection": "irclink1",
+          "channels": [
+            "#itabashi",
+            "#itabashi1"
+          ]
+        }
+      ],
       "log": true,
       "name": "Link1"
     }
@@ -17,6 +36,11 @@
       "password": ""
     },
     {
+      "name": "discordlink2",
+      "type": "discord",
+      "oauth": "APIKey"
+    },
+    {
       "name": "irclink1",
       "type": "irc",
       "nickname": "Itabashi",
@@ -26,7 +50,7 @@
       "tls_verify": false
     }
   ],
-  "version": 2,
+  "version": 3,
   "logging": {
     "console_debug": false,
     "file_debug": true

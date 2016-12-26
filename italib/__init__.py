@@ -1,2 +1,2 @@
 # used to alert for new config format versions, etc
-CURRENT_CONFIG_VERSION = 2
+CURRENT_CONFIG_VERSION = 3
